@@ -17,6 +17,7 @@ class User extends bookshelf.Model{
       return hash;
     }catch (e) {
       console.log('password hash failed', e);
+      throw e;
     }
   }
 }

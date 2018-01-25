@@ -1,7 +1,7 @@
 require('dotenv').config();
 const app = require('express')();
 const bodyParser = require('body-parser');
-const User = require('./models/User');
+const userService = require('./service/userService');
 
 app.use(bodyParser.json());
 
@@ -11,21 +11,10 @@ const server = app.listen(process.env.PORT | 3000, () => {
 });
 
 app.post('/user/new',async (req, res, next) => {
-  console.log('post recieved to create new user');
-  console.log('userDetails: ', req.body);
-  try {
-    await User.forge({
-      u_fname: req.body.fname,
-      u_sname: req.body.sname,
-      u_role: req.body.role,
-      u_mobileNo: req.body.mobile,
-      u_admin: req.body.admin,
-      u_password: req.body.password
-    }).save();
-    return res.status(200).json({msg: 'request recieved'})
-  } catch (e){
-    return res.status(500).json({msg: 'an error has occurred'})
-  }
-
-
+  const result = await userService.createNewUser(req.body);
+  res.status(result.success ? 200 : 500).send({
+    msg: result.success ?
+        'user added successfully':
+        'user addition failed'
+  });
 });
