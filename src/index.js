@@ -33,11 +33,12 @@ const customAuth = async (username, password, cb) => {
 
  app.use(basic( {authorizer: customAuth, authorizeAsync: true}));
  app.use(async (req, res, next) => {
-   console.log('auth challege succeeded, adding admin status to request')
+   console.log('auth challege succeeded, adding admin status to request');
    try {
      const user = await User.query().first().where({ u_email: req.auth.user});
      console.log('user fetched', user);
-     req.auth.admin = user.u_admin;
+     console.log('is user admin?', !!(user.u_admin && user.u_adminConfirmed))
+     req.auth.admin = !!(user.u_admin && user.u_adminConfirmed);
      next();
    } catch(e){
      console.log('error adding admin status to request');
@@ -46,6 +47,7 @@ const customAuth = async (username, password, cb) => {
  });
  const adminCheck = (req, res, next) => {
    console.log('request made to a protected resource, checking admin status');
+   
    if(!req.auth.admin) return res.status(401).send({msg: 'you must be an admin to add a facility'});
    console.log('user is admin');
    next();
