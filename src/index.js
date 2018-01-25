@@ -49,9 +49,14 @@ const customAuth = async (username, password, cb) => {
    console.log('user is admin');
    next();
  };
- app.post('/facility', adminCheck, (req, res, next) => {
-
-  res.send(200);
+ app.post('/facility', adminCheck, async (req, res, next) => {
+  console.log('request made add a facility');
+  const result = await userService.createFacility(req.body);
+   res.status(result.success ? 200 : 500).send({
+     msg: result.success ?
+         'facility added successfully':
+         'facility addition failed'
+   });
  });
  app.get('/test', (req, res, next) => {
    console.log('test passed');
