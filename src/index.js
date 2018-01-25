@@ -4,7 +4,6 @@ const basic = require('express-basic-auth');
 const bodyParser = require('body-parser');
 const userService = require('./service/userService');
 const User = require('./models/User');
-const bcrypt = require('bcrypt');
 app.use(bodyParser.json());
 
 
@@ -24,8 +23,8 @@ app.post('/user/new', async (req, res, next) => {
 const customAuth = async (username, password, cb) => {
   console.log('fetched username', username);
   try{
-    const user = await new User('u_email', username).fetch();
-    return cb(null, await bcrypt.compare(password, user.attributes.u_password));
+    const user = await User.query().first().where({ u_email: username});
+    return cb(null, await user.verifyPassword(password));
   }catch(e){
     console.log('error authenticating user', e);
     return cb(null, false)
@@ -36,8 +35,9 @@ const customAuth = async (username, password, cb) => {
  app.use(async (req, res, next) => {
    console.log('auth challege succeeded, adding admin status to request')
    try {
-     const user = await new User('u_email', req.auth.user).fetch();
-     req.auth.admin = user.attributes.u_admin;
+     const user = await User.query().first().where({ u_email: req.auth.user});
+     console.log('user fetched', user);
+     req.auth.admin = user.u_admin;
      next();
    } catch(e){
      console.log('error adding admin status to request');
@@ -59,9 +59,26 @@ const customAuth = async (username, password, cb) => {
          'facility addition failed'
    });
  });
- app.get('/facility:id', async (req, res, next) => {
+ app.get('/facility/:id', async (req, res, next) => {
     console.log('request recieved to fetch single facility');
-
+    const result = await userService.fetchFacilityById(req.params.id);
+   const wasSuccessful = result.success || false;
+   res.status(wasSuccessful ? 200 : 500).send({
+     msg: wasSuccessful ?
+         'facility fectched successfully':
+         'facility fetch failed',
+     data: result.data
+   });
+ });
+ app.put('/facility/:id', adminCheck, async (req, res, next) => {
+   const result = await userService.updateFacility(req.params.id, {name: req.body.name});
+   const wasSuccessful = result.success || false;
+   res.status(wasSuccessful ? 200 : 500).send({
+     msg: wasSuccessful ?
+         'facilities updated successfully':
+         'facility update failed',
+     data: result.data
+   });
  });
  app.get('/facility', async (req, res, next) => {
    console.log('request recieved to fetch all facilities');

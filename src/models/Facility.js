@@ -1,6 +1,6 @@
-const bookshelf = require('../bookshelf');
-class Facility extends bookshelf.Model {
-  get tableName () {
+const Model = require('../objection');
+class Facility extends Model {
+  static get tableName () {
     return 'facility';
   }
 }

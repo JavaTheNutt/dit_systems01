@@ -6,20 +6,22 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "nodemon src/index.js",
-    "rebuild-database": "knex-migrate redo && node populateDb"
+    "rebuild-database": "knex-migrate redo && node populateDb",
+    "drop-db": "knex-migrate down --to 0",
+    "build-db": "knex migrate:latest"
   },
   "author": "joe wemyss <joe.wemyss@javathenutt.com>",
   "license": "MIT",
   "dependencies": {
-    "bcrypt": "^1.0.3",
     "body-parser": "^1.18.2",
-    "bookshelf": "^0.12.1",
     "email-validator": "^1.1.1",
     "express": "^4.16.2",
     "express-basic-auth": "^1.1.3",
     "knex": "^0.14.2",
     "knex-migrate": "^1.5.1",
-    "mysql": "^2.15.0"
+    "mysql": "^2.15.0",
+    "objection": "^0.9.4",
+    "objection-password": "^0.2.0"
   },
   "devDependencies": {
     "dotenv": "^4.0.0",

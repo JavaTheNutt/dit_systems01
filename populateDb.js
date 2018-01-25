@@ -6,7 +6,7 @@ let user02;
 let facility01;
 let facility02;
 (async()=> {
-  user01 = await new User({
+  user01 = await User.query().insert({
     u_fname: 'joe',
     u_sname: 'bloggs',
     u_role: 'manager',
@@ -14,8 +14,8 @@ let facility02;
     u_admin: true,
     u_password: 'pa$$w0rd',
     u_email: 'joe.bloggs@test.com'
-  }).save();
-  user02 = await new User({
+  });
+  user02 = await User.query().insert({
     u_fname: 'john',
     u_sname: 'bloggs',
     u_role: 'parent',
@@ -23,13 +23,13 @@ let facility02;
     u_admin: false,
     u_password: 'pa$$w0rd',
     u_email: 'john.bloggs@test.com'
-  }).save();
-  facility01 = await new Facility({
+  });
+  facility01 = await Facility.query().insert({
     f_name: 'pitch 01'
-  }).save();
-  facility02 = await new Facility({
+  });
+  facility02 = await Facility.query().insert({
     f_name: 'meeting room 01'
-  }).save();
+  });
   end();
 })();
 
