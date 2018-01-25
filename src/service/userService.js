@@ -10,7 +10,8 @@ module.exports = exports = {
         u_role: details.role,
         u_mobileNo: details.mobile,
         u_admin: details.admin,
-        u_password: details.password
+        u_password: details.password,
+        u_email: details.email
       }).save();
       return {success: true}
     } catch (e){
