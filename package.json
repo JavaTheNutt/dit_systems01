@@ -5,7 +5,8 @@
   "main": "src/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "nodemon src/index.js"
+    "start": "nodemon src/index.js",
+    "rebuild-database": "knex-migrate redo && node populateDb"
   },
   "author": "joe wemyss <joe.wemyss@javathenutt.com>",
   "license": "MIT",
@@ -17,6 +18,7 @@
     "express": "^4.16.2",
     "express-basic-auth": "^1.1.3",
     "knex": "^0.14.2",
+    "knex-migrate": "^1.5.1",
     "mysql": "^2.15.0"
   },
   "devDependencies": {
