@@ -34,6 +34,7 @@ const customAuth = async (username, password, cb) => {
 
  app.use(basic( {authorizer: customAuth, authorizeAsync: true}));
  app.use(async (req, res, next) => {
+   console.log('auth challege succeeded, adding admin status to request')
    try {
      const user = await new User('u_email', req.auth.user).fetch();
      req.auth.admin = user.attributes.u_admin;
@@ -44,7 +45,7 @@ const customAuth = async (username, password, cb) => {
    }
  });
  const adminCheck = (req, res, next) => {
-   console.log('testing if user is admin');
+   console.log('request made to a protected resource, checking admin status');
    if(!req.auth.admin) return res.status(401).send({msg: 'you must be an admin to add a facility'});
    console.log('user is admin');
    next();
@@ -56,6 +57,21 @@ const customAuth = async (username, password, cb) => {
      msg: result.success ?
          'facility added successfully':
          'facility addition failed'
+   });
+ });
+ app.get('/facility:id', async (req, res, next) => {
+    console.log('request recieved to fetch single facility');
+
+ });
+ app.get('/facility', async (req, res, next) => {
+   console.log('request recieved to fetch all facilities');
+   const result = await userService.fetchFacilities();
+   const wasSuccessful = result.success || false;
+   res.status(wasSuccessful ? 200 : 500).send({
+     msg: wasSuccessful ?
+         'facilities fectched successfully':
+         'facility fetch failed',
+     data: result.data
    });
  });
  app.get('/test', (req, res, next) => {

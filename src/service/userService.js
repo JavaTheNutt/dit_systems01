@@ -28,5 +28,26 @@ module.exports = exports = {
       console.log('error occurred while saving facility', e);
       return {success: false, error: e}
     }
+  },
+  async fetchFacilities () {
+    console.log('attempting to fetch facilities details');
+    try {
+      const facilities = await Facility.fetchAll();
+      console.log('facilities fetched', facilities);
+      return {success: true, data: facilities}
+    }catch(e){
+      console.log('error fetching facilities', e);
+      return {success: false, data: {}, error: e}
+    }
+  },
+  async fetchFacilityById (id) {
+    console.log('attempting to fetch facility with ID ', id);
+    try {
+      const facility = await new Facility({f_id: id}).fetch();
+      return {success: true, data: facility}
+    }catch(error){
+      console.log('error fetching facilities', e);
+      return { success: false, error, msg: 'an error occurred while fetching facility' }
+    }
   }
 };
