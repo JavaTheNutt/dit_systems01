@@ -3,6 +3,7 @@ const Facility = require('./src/models/Facility');
 
 let user01;
 let user02;
+let user03;
 let facility01;
 let facility02;
 (async()=> {
@@ -12,6 +13,7 @@ let facility02;
     u_role: 'manager',
     u_mobileNo: '0851111111',
     u_admin: true,
+    u_adminConfirmed: true,
     u_password: 'pa$$w0rd',
     u_email: 'joe.bloggs@test.com'
   });
@@ -23,6 +25,15 @@ let facility02;
     u_admin: false,
     u_password: 'pa$$w0rd',
     u_email: 'john.bloggs@test.com'
+  });
+  user03 = await User.query().insert({
+    u_fname: 'james',
+    u_sname: 'bloggs',
+    u_role: 'parent',
+    u_mobileNo: '0853333333',
+    u_admin: true,
+    u_password: 'pa$$w0rd',
+    u_email: 'james.bloggs@test.com'
   });
   facility01 = await Facility.query().insert({
     f_name: 'pitch 01'

@@ -6,9 +6,11 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "nodemon src/index.js",
-    "rebuild-database": "knex-migrate redo && node populateDb",
+    "rebuild-db": "knex-migrate redo && npm run populate",
     "drop-db": "knex-migrate down --to 0",
-    "build-db": "knex migrate:latest"
+    "build-db": "knex migrate:latest",
+    "build-and-populate": "npm run build-db && npm run populate",
+    "populate": "node populateDb"
   },
   "author": "joe wemyss <joe.wemyss@javathenutt.com>",
   "license": "MIT",
