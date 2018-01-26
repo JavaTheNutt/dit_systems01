@@ -64,5 +64,60 @@ module.exports = exports = {
       console.log('error fetching facilities', error);
       return { success: false, error, msg: 'an error occurred while fetching facility' }
     }
+  },
+  async requestAdminStatus(email) {
+    const result = await exports.fetchUserByEmail(email);
+    if(!result.success) return result;
+    const user = Object.assign({}, result.data);
+    if(user.u_admin && user.u_adminConfirmed) return {success: false, msg: 'user is already an admin'};
+    if(user.u_admin && !user.u_adminConfirmed) return {success: false, msg: 'user has already requested admin status'};
+    const updateResult = await exports.updateUser(user.id, {admin: true, adminConfirmed: false})
+    console.log('update successful?', updateResult.success);
+    return updateResult;
+  },
+  async fetchUserByEmail(email){
+    console.log('attempting to fetch user', email);
+    try{
+      const user = await User.query().where({u_email: email});
+      console.log('user fetched');
+      if (!user || Object.keys(user).length === 0) return {success: false, msg: 'user does not exist'};
+      return {success: true, data: user}
+    }catch (error){
+      console.log('erorr fetching user', error);
+      return {success: false, msg: 'erorr fetching user', error}
+    }
+  },
+  async setUserAsAdmin (id){
+    console.log('attempting to set user', id, 'as admin');
+    const result = await exports.updateUser(id, {admin: true, adminConfirmed: true});
+    console.log('successful update?', result.success);
+    return result
+  },
+  async updateUser (id, details){
+    details = JSON.parse(JSON.stringify(sanitzeUserDetails(details)));
+    console.log('sanitised details: ', details);
+    try {
+      const user = await User.query().patchAndFetchById(id, details);
+      console.log('queried for user', user);
+      if(!user) return {success: false, data: {}, msg: 'user not found'};
+      console.log('user exists');
+      return {success: true, data: user}
+    }catch(error){
+      console.log('error updating  user', error);
+      return { success: false, error, msg: 'an error occurred while updating user' }
+    }
   }
 };
+
+// fixme updating user causes a password cant be null error
+
+const sanitzeUserDetails = details => ({
+  u_fname: details.fname,
+  u_sname: details.sname,
+  u_role: details.role,
+  u_admin: details.admin || false,
+  u_adminConfirmed: details.adminConfirmed || false,
+  u_mobile: details.mobile,
+  u_password:details.password,
+  u_email: details.email
+});
