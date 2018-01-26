@@ -87,11 +87,33 @@ module.exports = exports = {
       return {success: false, msg: 'erorr fetching user', error}
     }
   },
+  async fetchUserById (id) {
+    console.log('attempting to fetch user with id', id);
+    try{
+      const user  = await User.query().where({id});
+      console.log('user fetched', user);
+      if (!user || Object.keys(user).length === 0) return {success: false, msg: 'user does not exist'};
+      return {success: true, data: user};
+    }catch (error){
+      console.log('erorr fetching user', error);
+      return {success: false, msg: 'erorr fetching user', error}
+    }
+  },
   async setUserAsAdmin (id){
     console.log('attempting to set user', id, 'as admin');
     const result = await exports.updateUser(id, {admin: true, adminConfirmed: true});
     console.log('successful update?', result.success);
     return result
+  },
+  async requestAdminStatus (id) {
+    console.log('user with id', id, 'requesting admin status');
+    const userFetchResult = await exports.fetchUserById(id);
+    if(!userFetchResult.success) return userFetchResult;
+    const user = userFetchResult.data;
+    console.log('fetched user', user);
+    if(!!user[0].u_adminConfirmed) return {success: false, msg: 'user is already admin'};
+    if(!!user[0].u_admin) return {success: false, msg: 'user has already requested admin status'};
+    return exports.updateUser(id, {admin: true});
   },
   async updateUser (id, details){
     details = JSON.parse(JSON.stringify(sanitzeUserDetails(details)));
@@ -108,8 +130,6 @@ module.exports = exports = {
     }
   }
 };
-
-// fixme updating user causes a password cant be null error
 
 const sanitzeUserDetails = details => ({
   u_fname: details.fname,
