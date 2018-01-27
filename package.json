@@ -15,10 +15,11 @@
   "author": "joe wemyss <joe.wemyss@javathenutt.com>",
   "license": "MIT",
   "dependencies": {
+    "basic-auth": "^2.0.0",
     "body-parser": "^1.18.2",
+    "cors": "^2.8.4",
     "email-validator": "^1.1.1",
     "express": "^4.16.2",
-    "express-basic-auth": "^1.1.3",
     "knex": "^0.14.2",
     "knex-migrate": "^1.5.1",
     "mysql": "^2.15.0",

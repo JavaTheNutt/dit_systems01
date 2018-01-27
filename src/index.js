@@ -1,11 +1,13 @@
 require('dotenv').config();
 const app = require('express')();
-const basic = require('express-basic-auth');
+const basic = require('basic-auth');
+const cors = require('cors');
 const bodyParser = require('body-parser');
 const userService = require('./service/userService');
 const User = require('./models/User');
 app.use(bodyParser.json());
 
+app.use(cors());
 
 const server = app.listen(process.env.PORT | 3000, () => {
   console.log(`server started at ${server.address().address} on port ${server.address().port}`);
@@ -20,31 +22,43 @@ app.post('/user/new', async (req, res, next) => {
   });
 });
 
-const customAuth = async (username, password, cb) => {
+const customAuth = async (username, password) => {
   console.log('fetched username', username);
   try{
     const user = await User.query().first().where({ u_email: username});
-    return cb(null, await user.verifyPassword(password));
+    console.log('user record fetched, attempting to perform validation');
+    console.log('password to be verfied:', password);
+    const verifyResult = await user.verifyPassword(password);
+    console.log('verify result:', verifyResult);
+    return {
+      success: true,
+      data: {
+        email: username,
+        id: user.id,
+        admin: !!(user.u_admin && user.u_adminConfirmed)
+      }};
   }catch(e){
     console.log('error authenticating user', e);
-    return cb(null, false)
+    return {success: false, error:e, msg: 'an error occurred while authenticating user'};
   }
 };
-
- app.use(basic( {authorizer: customAuth, authorizeAsync: true}));
  app.use(async (req, res, next) => {
-   console.log('auth challege succeeded, adding admin status to request');
-   try {
-     const user = await User.query().first().where({ u_email: req.auth.user});
-     console.log('user fetched', user);
-     console.log('is user admin?', !!(user.u_admin && user.u_adminConfirmed));
-     req.auth.admin = !!(user.u_admin && user.u_adminConfirmed);
-     req.auth.userId = user.id;
-     next();
-   } catch(e){
-     console.log('error adding admin status to request');
-     next(new Error('error adding admin status to request'));
+   const parsedAuth = basic(req);
+   if(!parsedAuth){
+     console.log('authorisation failed');
+     return res.status(401).send({msg: 'authorisation header is invalid', details: 'please ensure that you have an' +
+       ' Authorization header which adheres to RFC-7617'})
    }
+   console.log('Authorization header parsed, attempting validation');
+   const authResult = await customAuth(parsedAuth.name, parsedAuth.pass);
+   console.log('auth result fetched');
+   if(!authResult.success){
+     console.log('auth was unsuccessful');
+     console.log(authResult.msg);
+     return res.status(401).send({msg: 'authentication failed'})
+   }
+   req.auth = authResult.data;
+   next();
  });
  const adminCheck = (req, res, next) => {
    console.log('request made to a protected resource, checking admin status');
@@ -53,7 +67,10 @@ const customAuth = async (username, password, cb) => {
    console.log('user is admin');
    next();
  };
-
+ app.get('/user/login', (req, res, next) => {
+  console.log('user is assumed valid, since it passed the auth check');
+  return res.status(200).send('login succeeded');
+ });
  app.post('/facility', adminCheck, async (req, res, next) => {
   console.log('request made add a facility');
   const result = await userService.createFacility(req.body);
