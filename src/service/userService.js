@@ -128,6 +128,32 @@ module.exports = exports = {
       console.log('error updating  user', error);
       return { success: false, error, msg: 'an error occurred while updating user' }
     }
+  },
+  async getUnconfirmedAdmins () {
+    console.log('attempting to fetch unconfirmed admins');
+    try {
+      const users = await User.query()
+      .where('u_admin', true)
+      .where('u_adminConfirmed', false);
+      console.log(users.length, 'users found');
+      return {success: true, data: exports.stripPasswordProps(users)}
+    }catch (error) {
+      console.log('error while fetching unconfirmed admin', error);
+      return {success: false, error, msg: 'error while fetching unconfirmed admin'}
+    }
+  },
+  stripPasswordProps (users) {
+    console.log('stripping props for: ', users);
+    return users.map(user => exports.stripPasswordProp(user));
+  },
+  stripPasswordProp(user){
+    console.log('stripping prop from: ', user);
+    return Object.keys(user)
+    .filter(key => key !== 'u_password')
+    .reduce((obj, key) => {
+      obj[key] = user[key];
+      return obj;
+    }, {})
   }
 };
 

@@ -67,9 +67,18 @@ const customAuth = async (username, password) => {
    console.log('user is admin');
    next();
  };
- app.get('/user/login', (req, res, next) => {
+ app.get('/user/login', async (req, res, next) => {
   console.log('user is assumed valid, since it passed the auth check');
-  return res.status(200).send('login succeeded');
+  const data = {
+    user: req.auth
+  };
+  if(req.auth.admin){
+    console.log('user is admin, returning admin details');
+    const adminRequests = await userService.getUnconfirmedAdmins();
+    data.adminRequests = adminRequests;
+    console.log('admin requests:', adminRequests);
+  }
+  return res.status(200).send({msg:'login succeeded', data});
  });
  app.post('/facility', adminCheck, async (req, res, next) => {
   console.log('request made add a facility');
