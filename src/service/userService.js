@@ -142,6 +142,10 @@ module.exports = exports = {
       return {success: false, error, msg: 'error while fetching unconfirmed admin'}
     }
   },
+  async refuseAdminRequest (id) {
+    console.log('refusing ', id, 'admin request');
+    return await exports.updateUser(id, {admin: false, adminConfirmed: false});
+  },
   stripPasswordProps (users) {
     console.log('stripping props for: ', users);
     return users.map(user => exports.stripPasswordProp(user));

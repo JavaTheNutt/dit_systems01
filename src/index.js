@@ -132,6 +132,11 @@ const customAuth = async (username, password) => {
      data: result.data
    });
  });
+ app.get('/user/getAdminRequests', adminCheck, async (req, res, next) => {
+   console.log('request recieved to fetch pending admin requests');
+   const result = await userService.getUnconfirmedAdmins();
+   sendResponse(res, result);
+ });
 app.put('/user/:id/setAdmin', adminCheck, async (req, res, next) => {
   console.log('request recieved to set user', req.params.id, 'as admin');
   const result = await userService.setUserAsAdmin(req.params.id);
@@ -143,7 +148,12 @@ app.put('/user/:id/setAdmin', adminCheck, async (req, res, next) => {
     data: result.data
   });
 });
-
+app.put('/user/:id/refuseAdminRequest', adminCheck, async (req, res, next) => {
+  console.log('request recieved to refuse user', req.params.id, 'admin rights');
+  const result = await userService.refuseAdminRequest(req.params.id);
+  sendResponse(res, result);
+});
+const sendResponse = (res, result) => res.status(result.success ? 200 : 500).send(result.data);
  app.get('/test', (req, res, next) => {
    console.log('test passed');
    console.log('request auth', req.auth);
