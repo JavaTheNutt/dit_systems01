@@ -52,10 +52,19 @@ module.exports = exports = {
       return { success: false, error, msg: 'an error occurred while fetching facility' }
     }
   },
-  async updateFacility (id, { name }) {
-    console.log('request recived to update facility name to', name, ' with id ', id);
+  async updateFacility (id, details) {
+    console.log('request recived to update facility to', details, ' with id ', id);
+    const updatedDetails = {};
+    if(details.name){
+      console.log('details has name');
+      updatedDetails.f_name = details.name;
+    }
+    if(details.confirmed){
+      console.log('details has confirmed');
+      updatedDetails.f_approved = details.confirmed;
+    }
     try {
-      const facility = await Facility.query().patchAndFetchById(id, {'f_name': name});
+      const facility = await Facility.query().patchAndFetchById(id, updatedDetails);
       console.log('queried for facility', facility.toJSON());
       if(!facility) return {success: false, data: {}, msg: 'facility not found'};
       console.log('facility exists');
@@ -142,9 +151,54 @@ module.exports = exports = {
       return {success: false, error, msg: 'error while fetching unconfirmed admin'}
     }
   },
+  async getUnconfirmedFacilities () {
+    console.log('attempting to fetch unconfirmed facilities');
+    try {
+      const facilities = await Facility.query().where('f_approved', false);
+      console.log(facilities.length, 'facilities found');
+      return {success: true, data: facilities}
+    } catch (error) {
+      console.log('error while fetching unconfirmed facilities', error);
+      return {success: false, error, msg: 'error while fetching unconfirmed facilities'}
+    }
+  },
+  async getAdminRequests () {
+    console.log('attempting to fetch items that require admin attentions');
+    const unconfirmedAdmins = await exports.getUnconfirmedAdmins();
+    if(!unconfirmedAdmins.success){
+      console.log('erorr fetching unconfirmed admins');
+      return unconfirmedAdmins;
+    }
+    const unconfirmedFacilities = await exports.getUnconfirmedFacilities();
+    if(!unconfirmedFacilities.success){
+      console.log('erorr fetching unconfirmed admins');
+      return unconfirmedFacilities;
+    }
+    return {success: true, data:{admins: unconfirmedAdmins.data, facilities: unconfirmedFacilities.data}}
+  },
   async refuseAdminRequest (id) {
     console.log('refusing ', id, 'admin request');
     return await exports.updateUser(id, {admin: false, adminConfirmed: false});
+  },
+  async confirmFacilityRequest (id) {
+    console.log('confirming ', id, 'facility request');
+    return await exports.updateFacility(id, {confirmed: true});
+  },
+  async rejectFacilityRequest (id) {
+    console.log('rejecting ', id, 'facility request');
+    return await exports.deleteFacility(id);
+  },
+  async deleteFacility (id) {
+    console.log('deleting facility with id', id);
+    try{
+      const result = await Facility.query().delete().where('id', id);
+      if(!result || result < 1) return {success: false, msg: 'nothing deleted'};
+      console.log(result, 'records deleted');
+      return {success: true, msg: 'item deleted'}
+    }catch(error){
+      console.log('error deleting item', error);
+      return {success: false, msg: 'error deleting item', error}
+    }
   },
   stripPasswordProps (users) {
     console.log('stripping props for: ', users);

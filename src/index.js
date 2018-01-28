@@ -74,7 +74,7 @@ const customAuth = async (username, password) => {
   };
   if(req.auth.admin){
     console.log('user is admin, returning admin details');
-    const adminRequests = await userService.getUnconfirmedAdmins();
+    const adminRequests = await userService.getAdminRequests();
     data.adminRequests = adminRequests;
     console.log('admin requests:', adminRequests);
   }
@@ -89,6 +89,16 @@ const customAuth = async (username, password) => {
          'facility addition failed'
    });
  });
+ app.put('/facility/:id/confirm', adminCheck, async (req, res, next) => {
+  console.log('request made to confirm a facility');
+  const result = await userService.confirmFacilityRequest(req.params.id);
+  sendResponse(res, result);
+ });
+app.put('/facility/:id/reject', adminCheck, async (req, res, next) => {
+  console.log('request made to reject a facility');
+  const result = await userService.rejectFacilityRequest(req.params.id);
+  sendResponse(res, result);
+});
  app.get('/facility/:id', async (req, res, next) => {
     console.log('request recieved to fetch single facility');
     const result = await userService.fetchFacilityById(req.params.id);
@@ -134,7 +144,7 @@ const customAuth = async (username, password) => {
  });
  app.get('/user/getAdminRequests', adminCheck, async (req, res, next) => {
    console.log('request recieved to fetch pending admin requests');
-   const result = await userService.getUnconfirmedAdmins();
+   const result = await userService.getAdminRequests();
    sendResponse(res, result);
  });
 app.put('/user/:id/setAdmin', adminCheck, async (req, res, next) => {
