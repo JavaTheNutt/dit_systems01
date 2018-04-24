@@ -1,0 +1,4 @@
+{
+  "ignore": ["./populateDb.js", "./migrations/**"],
+  "verbose": true
+}
